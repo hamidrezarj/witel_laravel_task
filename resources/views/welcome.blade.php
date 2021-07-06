@@ -9,6 +9,7 @@
         <thead>
             <tr>
                 <th scope="col">#</th>
+                <th scope="col">Profile image</th>
                 <th scope="col">Firstname</th>
                 <th scope="col">Lastname</th>
                 <th scope="col">Student ID</th>
@@ -22,6 +23,14 @@
             @foreach($students as $student)
             <tr>
                 <th scope="row">{{$loop->iteration}}</th>
+
+                @if(empty($student->image_path) || is_null($student->image_path))
+                    <th scope="row"><img src="{{asset('storage/app/public/profile_images/default.png')}}" class="rounded-circle" height="50" alt="" loading="lazy" /></th>
+
+                @else
+                    <th scope="row"><img src="{{asset('storage/app/public/profile_images/'.$student->image_path)}}" class="rounded-circle" height="50" alt="" loading="lazy" /></th>
+                @endif
+
                 <td>{{$student->first_name}}</td>
                 <td>{{$student->last_name}}</td>
                 <td>{{$student->student_id}}</td>
@@ -49,13 +58,13 @@
     <!-- {{$students->links()}} -->
 
     <a href="{{$students->previousPageUrl()}}"><i class="fa fa-angle-double-left"></i></a>
-    
+
     @for($i=0; $i<=$students->lastPage(); $i++)
 
         <a href="{{$students->url($i)}}">{{$i}}</a>
-    @endfor
+        @endfor
 
-    <a href="{{$students->nextPageUrl()}}"><i class="fa fa-angle-double-right"></i></a>
+        <a href="{{$students->nextPageUrl()}}"><i class="fa fa-angle-double-right"></i></a>
 
 </div>
 
