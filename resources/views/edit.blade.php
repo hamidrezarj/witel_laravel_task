@@ -1,5 +1,5 @@
 
-@extends('layouts.main')
+@extends('layouts.main')    
 @section('content')
 
 <div class="container">
@@ -16,8 +16,9 @@
         </div>
         @endif
 
-        <form method="GET" action="{{route('update', $current_student->id)}}">
+        <form method="POST" action="{{route('update', $current_student->id)}}" enctype="multipart/form-data">
             {{csrf_field()}}
+            @method('PUT')
 
             <div class="form-outline">
                 <label class="form-label" for="typeText">Firstname</label>
@@ -54,6 +55,9 @@
 
                 </select>
             </div>
+
+            <input type="file" class="form-control" id="inputGroupFile02" name="image_file" accept="image/*">
+
             <div class="d-grid gap-2 col-6">
                 <button class="btn btn-primary" type="submit">submit</button>
             </div>
