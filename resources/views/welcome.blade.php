@@ -9,8 +9,12 @@
         <thead>
             <tr>
                 <th scope="col">#</th>
-                <th scope="col">First</th>
-                <th scope="col">Last</th>
+                <th scope="col">Firstname</th>
+                <th scope="col">Lastname</th>
+                <th scope="col">Student ID</th>
+                <th scope="col">Birth Date</th>
+                <th scope="col">Sex</th>
+
                 <th scope="col">Modify</th>
             </tr>
         </thead>
@@ -20,6 +24,9 @@
                 <th scope="row">{{$loop->iteration}}</th>
                 <td>{{$student->first_name}}</td>
                 <td>{{$student->last_name}}</td>
+                <td>{{$student->student_id}}</td>
+                <td>{{$student->birth_date}}</td>
+                <td>{{$student->sex}}</td>
                 <td>
                     <a href="{{route('edit', $student->id)}}"><i class="fas fa-edit"></i></a>
                     ||
@@ -32,13 +39,23 @@
                     <a href="{{route('delete', $student->id)}}"><i class="fa fa-minus-circle" aria-hidden="true"></i></a>
                 </td>
 
+
             </tr>
             @endforeach
         </tbody>
     </table>
 
     <!-- Paginaation section -->
-    {{$students->links()}}
+    <!-- {{$students->links()}} -->
+
+    <a href="{{$students->previousPageUrl()}}"><i class="fa fa-angle-double-left"></i></a>
+    
+    @for($i=0; $i<=$students->lastPage(); $i++)
+
+        <a href="{{$students->url($i)}}">{{$i}}</a>
+    @endfor
+
+    <a href="{{$students->nextPageUrl()}}"><i class="fa fa-angle-double-right"></i></a>
 
 </div>
 
@@ -56,19 +73,5 @@
 
 @section('script')
 
-<script>
-    rm_btn = document.getElementById('remove-btn');
-    console.log(rm_btn);
-
-    rm_btn.addEventListener('onclick', function(event) {
-        event.preventDefault();
-        console.log('bitchhhh');
-
-        var confirm_deletion = confirm("Are you sure you want to delete?");
-
-        if (confirm_deletion)
-            document.getElementById('delete-form-{{$student->id }}').submit();
-    });
-</script>
 
 @endsection

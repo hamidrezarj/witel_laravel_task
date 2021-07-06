@@ -21,7 +21,13 @@ class CreateStudentsTable extends Migration
         Schema::table('students', function (Blueprint $table){
             $table->string('first_name');
             $table->string('last_name');
+            $table->string('student_id')->unique();
+            $table->date('birth_date');
+            $table->enum('sex', ['Male', 'Female', 'Other']);
+        });
 
+        Schema::table('students', function (Blueprint $table){
+            $table->string('image_path')->nullable();
         });
     }
 

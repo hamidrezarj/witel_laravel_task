@@ -4,9 +4,15 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Student;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class StudentController extends Controller
 {
+
+    private $sex_types = ['Male', 'Female', 'Other'];
+    private $date_picker_format = 'm/d/Y';
     /**
      * Display a listing of the resource.
      *
@@ -14,12 +20,10 @@ class StudentController extends Controller
      */
     public function index()
     {
-        
+
         // $students = Student::all();
         $students = Student::paginate(5);
         return view('welcome', ['students' => $students]);
-
-        
     }
 
     /**
@@ -29,7 +33,8 @@ class StudentController extends Controller
      */
     public function create()
     {
-        return view('create');
+        // $this->sex_types
+        return view('create', ['sex_types' => $this->sex_types]);
     }
 
     /**
@@ -40,17 +45,58 @@ class StudentController extends Controller
      */
     public function store(Request $request)
     {
-        // dd($request);
+        $today_date = Carbon::now()->toDate()->format($this->date_picker_format);
 
-        $this->validate($request, [
-            'first_name' => 'required',
-            'last_name' => 'required'
-        ]);
+        $first_name = $request->first_name;
+        $last_name = $request->last_name;
+
+
+        Validator::make($request->all(), [
+            
+            'student_id' => 'required|digits:8|unique:students',
+            'birth_date' => 'required|before_or_equal:' . $today_date,
+
+            'first_name' => [
+                'required',
+                Rule::unique('students')->where(function($query) use($first_name, $last_name){
+                    return $query->where('first_name', $first_name)
+                    ->where('last_name', $last_name);
+                }),
+            ],
+
+            'last_name' => [
+                'required',
+                Rule::unique('students')->where(function($query) use($first_name, $last_name){
+                    return $query->where('first_name', $first_name)
+                    ->where('last_name', $last_name);
+                }),
+            ],
+            
+
+        ])->validate();
+
+        // $this->validate($request, [
+        //     'first_name' => 'required',
+        //     'last_name' => 'required',
+        //     'student_id' => 'required|digits:8|unique:students',
+        //     'birth_date' => 'required|before_or_equal:' . $today_date
+        // ]);
+
+        // convert to y-m-d format.
+        // $formatted_birthdate = Carbon::createFromFormat($this->date_picker_format, $request->birth_date)->format('Y-m-d');
+        $formatted_birthdate = Carbon::parse($request->birth_date)->format('Y-m-d');
 
         $student = new Student();
         $student->first_name = $request->first_name;
         $student->last_name = $request->last_name;
-        $student->save();   
+        $student->student_id = $request->student_id;
+        $student->birth_date = $formatted_birthdate;
+        $student->sex = $request->sex;
+
+        if ($request->hasFile('image_file')) {
+        }
+
+        $student->save();
 
         return redirect()->route('home')->with('successMsg', 'Student created successfully!');
     }
@@ -75,7 +121,7 @@ class StudentController extends Controller
     public function edit($id)
     {
         $current_student = Student::find($id);
-        return view('edit', compact('current_student'));
+        return view('edit', ['current_student' => $current_student, 'sex_types' => $this->sex_types]);
     }
 
     /**
@@ -87,18 +133,53 @@ class StudentController extends Controller
      */
     public function update(Request $request, $id)
     {
-        $this->validate($request, [
-            'first_name' => 'required',
-            'last_name' => 'required'
-        ]);
+        $today_date = Carbon::now()->toDate()->format($this->date_picker_format);
+
+        $first_name = $request->first_name;
+        $last_name = $request->last_name;
 
         $student_to_update = Student::find($id);
+        Validator::make($request->all(), [
+            'first_name' => 'required',
+            'last_name' => 'required',
+            'student_id' => 'required|digits:8|unique:students,student_id,'.$student_to_update->id,
+            'birth_date' => 'required|before_or_equal:' . $today_date,
+
+            // 'first_name' => [
+            //     'required',
+            //     Rule::unique('students')->where(function($query) use($first_name, $last_name){
+            //         return $query->where('first_name', $first_name)
+            //         ->where('last_name', $last_name);
+            //     }),
+            // ],
+
+            // 'last_name' => [
+            //     'required',
+            //     Rule::unique('students')->where(function($query) use($first_name, $last_name){
+            //         return $query->where('first_name', $first_name)
+            //         ->where('last_name', $last_name);
+            //     }),
+            // ],
+            
+
+        ])->validate();
+
+        // convert to y-m-d format (IF CURRENT FORMAT IS NOT 'Y-m-d').
+
+        // $formatted_birthdate = Carbon::createFromFormat($this->date_picker_format, $request->birth_date)->format('Y-m-d');
+        $formatted_birthdate = Carbon::parse($request->birth_date)->format('Y-m-d');
+
+        
         $student_to_update->first_name = $request->first_name;
         $student_to_update->last_name = $request->last_name;
+        $student_to_update->student_id = $request->student_id;
+        $student_to_update->birth_date = $formatted_birthdate;
+        $student_to_update->sex = $request->sex;
+
         $student_to_update->save();
 
-        return redirect()->route('home')->with('successMsg', 'Student updated succussfully!');
 
+        return redirect()->route('home')->with('successMsg', 'Student updated succussfully!');
     }
 
     /**
@@ -109,7 +190,7 @@ class StudentController extends Controller
      */
     public function destroy($id)
     {
-        Student::find($id)->delete();   
+        Student::find($id)->delete();
         return redirect()->route('home')->with('successMsg', 'Student deleted succussfully!');
     }
 }
