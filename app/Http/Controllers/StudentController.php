@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Student;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
@@ -14,18 +15,41 @@ class StudentController extends Controller
 
     private $sex_types = ['Male', 'Female', 'Other'];
     private $date_picker_format = 'm/d/Y';
+    private $sort_lastname_cnt = 0;
+    private $sort_birthdate_cnt = 0;
+    private $cnt = 0;
     /**
      * Display a listing of the resource.
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function index(Request $request)
     {
 
-        // $students = Student::all();
-        $students = Student::paginate(5);
-        return view('welcome', ['students' => $students]);
+        $sort = '';
+        $order = '';
+
+        # THIS IS THE MOST IMPORTANT PIECE OF THIS PROJECT TILL NOW..
+        if ($request->has('sort') && $request->has('order')) {
+
+            if(($request->sort == 'last_name' || $request->sort == 'birth_date') && ($request->order == 'asc' || $request->order == 'desc')){
+                $sort = $request->sort;
+                $order = $request->order;
+                $students = Student::orderBy($sort, $order)->paginate(5);
+            }
+            else
+                return redirect()->route('home')->with('bad_param_error', "'Don't fucking mess with my code, bitch.");
+        } else {
+            $students = Student::paginate(5);
+        }
+
+        return view('welcome', [
+            'students'  => $students,
+            'sort'      => $sort,
+            'order'     => $order,
+        ]);
     }
+
 
     /**
      * Show the form for creating a new resource.
@@ -141,36 +165,25 @@ class StudentController extends Controller
 
         $student_to_update = Student::find($id);
         Validator::make($request->all(), [
-            // 'first_name' => 'required',
-            // 'last_name' => 'required',
             'sex' => 'required',
             'student_id' => 'required|digits:8|unique:students,student_id,' . $student_to_update->id,
             'birth_date' => 'required|before_or_equal:' . $today_date,
 
             'first_name' => [
                 'required',
-                Rule::unique('students')->where(function($query) use($first_name, $last_name, $id){
+                Rule::unique('students')->where(function ($query) use ($first_name, $last_name, $id) {
                     return $query->where('first_name', $first_name)
-                    ->where('last_name', $last_name)->where('id', '!=', $id);
+                        ->where('last_name', $last_name)->where('id', '!=', $id);
                 }),
             ],
 
             'last_name' => [
                 'required',
-                Rule::unique('students')->where(function($query) use($first_name, $last_name, $id){
+                Rule::unique('students')->where(function ($query) use ($first_name, $last_name, $id) {
                     return $query->where('first_name', $first_name)
-                    ->where('last_name', $last_name)->where('id', '!=', $id);
+                        ->where('last_name', $last_name)->where('id', '!=', $id);
                 }),
             ],
-
-            // 'last_name' => [
-            //     'required',
-            //     Rule::unique('students')->where(function($query) use($first_name, $last_name){
-            //         return $query->where('first_name', $first_name)
-            //         ->where('last_name', $last_name);
-            //     }),
-            // ],
-
 
         ])->validate();
 
@@ -194,6 +207,20 @@ class StudentController extends Controller
 
         return redirect()->route('home')->with('successMsg', 'Student updated succussfully!');
     }
+
+    // public function order(Request $request)
+    // {
+
+    //     if ($request->has('lastname_form')) {
+    //         $students = Student::orderBy('last_name', 'asc')->get();
+    //         // dd($students);
+    //     } else if ($request->has('birthdate_form')) {
+    //         echo "birthdaate";
+    //     }
+
+    //     return Redirect::route('home')->with(['sorted_students' => $students]);
+    //     // return view('welcome', ['students' => $students]);
+    // }
 
     /**
      * Remove the specified resource from storage.

@@ -5,15 +5,38 @@
 
 <div class="container">
 
+    @if(session('bad_param_error'))
+        <div class="alert alert-danger" role="alert">
+            {{session('bad_param_error')}}
+        </div>
+    @endif
+
     <table class="table table-striped table-hover">
         <thead>
             <tr>
                 <th scope="col">#</th>
                 <th scope="col">Profile image</th>
                 <th scope="col">Firstname</th>
-                <th scope="col">Lastname</th>
+                <th scope="col">
+
+                    @if($order == 'desc')
+                    <a href="{{''.url()->current().'?sort=last_name&order=asc'}}" id="sort_lastname"><i class="fas fa-sort"></i></a> Lastname
+
+                    @else
+                    <a href="{{''.url()->current().'?sort=last_name&order=desc'}}" id="sort_lastname"><i class="fas fa-sort"></i></a> Lastname
+                    @endif
+
+                </th>
                 <th scope="col">Student ID</th>
-                <th scope="col">Birth Date</th>
+                <th scope="col">
+
+                    @if($order == 'desc')
+                    <a href="{{''.url()->current().'?sort=birth_date&order=asc'}}" id="sort_birthdate"><i class="fas fa-sort"></i></a> Birth Date
+
+                    @else
+                    <a href="{{''.url()->current().'?sort=birth_date&order=desc'}}" id="sort_birthdate"><i class="fas fa-sort"></i></a> Birth Date
+                    @endif
+                </th>
                 <th scope="col">Sex</th>
 
                 <th scope="col">Modify</th>
@@ -25,10 +48,10 @@
                 <th scope="row">{{$loop->iteration}}</th>
 
                 @if(empty($student->image_path) || is_null($student->image_path))
-                    <th scope="row"><img src="{{asset('storage/app/public/profile_images/default.png')}}" class="rounded-circle" height="50" alt="" loading="lazy" /></th>
+                <th scope="row"><img src="{{asset('storage/app/public/profile_images/default.png')}}" class="rounded-circle" height="50" alt="" loading="lazy" /></th>
 
                 @else
-                    <th scope="row"><img src="{{asset('storage/app/public/profile_images/'.$student->image_path)}}" class="rounded-circle" height="50" alt="" loading="lazy" /></th>
+                <th scope="row"><img src="{{asset('storage/app/public/profile_images/'.$student->image_path)}}" class="rounded-circle" height="50" alt="" loading="lazy" /></th>
                 @endif
 
                 <td>{{$student->first_name}}</td>
@@ -54,17 +77,8 @@
         </tbody>
     </table>
 
-    <!-- Paginaation section -->
-    <!-- {{$students->links()}} -->
-
-    <a href="{{$students->previousPageUrl()}}"><i class="fa fa-angle-double-left"></i></a>
-
-    @for($i=0; $i<=$students->lastPage(); $i++)
-
-        <a href="{{$students->url($i)}}">{{$i}}</a>
-        @endfor
-
-        <a href="{{$students->nextPageUrl()}}"><i class="fa fa-angle-double-right"></i></a>
+    <!-- Pagination section -->
+    {{$students->withQueryString()->links()}}
 
 </div>
 
@@ -73,10 +87,10 @@
 
 @if(session('successMsg'))
 
-<div class="alert alert-success" role="alert">
-    {{session('successMsg')}}
-</div>
-@endif
+    <div class="alert alert-success" role="alert">
+        {{session('successMsg')}}
+    </div>
+    @endif
 
 @endsection
 
