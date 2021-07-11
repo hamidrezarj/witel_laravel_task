@@ -36,9 +36,9 @@
                 <th scope="col">Firstname</th>
                 <th scope="col">
 
-                    
+
                     <a href="{{$lastname_href}}" class="sort_elements" id="sort_lastname"><i class="fas fa-sort"></i></a> Lastname
-                    
+
 
                 </th>
                 <th scope="col">Student ID</th>
@@ -85,7 +85,7 @@
 
     <!-- Pagination section -->
     <div class="d-flex justify-content-center">
-        {{$students->withQueryString()->links()}}
+        {{$students->links('vendor.pagination.custom')}}
     </div>
 </div>
 
@@ -103,7 +103,7 @@
 
 @section('script')
 <script>
-    
+
 </script>
 
 @endsection

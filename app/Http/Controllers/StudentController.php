@@ -121,7 +121,7 @@ class StudentController extends Controller
             $birthdate_href .= '?'. $default_birthdate_url;
         }
 
-        $students = $students->paginate(5);
+        $students = $students->paginate(5)->withQueryString();
        
         return view('welcome', [
             'students'           => $students,
