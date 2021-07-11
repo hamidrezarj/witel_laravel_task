@@ -24,14 +24,14 @@ class StudentController extends Controller
     public function index(Request $request)
     {
         $sort = '';
-        $order = '';
+        $lastname_order = '';
+        $birthdate_order = '';
         $searched_firstname = '';
         $default_lastname_url = 'sort=last_name&order=desc';
         $default_birthdate_url = 'sort=birth_date&order=desc';
 
         $lastname_href = url()->current().'/';
         $birthdate_href = $lastname_href;
-
         $students = new Student();
         if($request->has('search_firstname')){
 
@@ -46,19 +46,20 @@ class StudentController extends Controller
 
                 if(($request->sort == 'last_name' || $request->sort == 'birth_date') && ($request->order == 'asc' || $request->order == 'desc')){
                     $sort = $request->sort;
-                    $order = $request->order;
-                    $students = $students->orderBy($sort, $order);
+                    $students = $students->orderBy($sort, $request->order);
 
-                    if($order == 'desc')
+                    if($request->order == 'desc')
                         $next_order = 'asc';
                     else 
                         $next_order = 'desc';
                     
                     if($sort == 'last_name'){
+                        $lastname_order = $request->order;
                         $lastname_href .= '&'.'sort='.$request->sort.'&order='.$next_order;
                         $birthdate_href .= '&'. $default_birthdate_url;
                     }
                     else {
+                        $birthdate_order = $request->order;
                         $birthdate_href .= '&'.'sort='.$request->sort.'&order='.$next_order;
                         $lastname_href   .= '&'. $default_lastname_url;
                         
@@ -81,19 +82,20 @@ class StudentController extends Controller
             
             if(($request->sort == 'last_name' || $request->sort == 'birth_date') && ($request->order == 'asc' || $request->order == 'desc')){
                 $sort = $request->sort;
-                $order = $request->order;
                     
-                if($order == 'desc')
+                if($request->order == 'desc')
                     $next_order = 'asc';
                 else 
                     $next_order = 'desc';
                 
                 if($sort == 'last_name'){
+                    $lastname_order = $request->order;
                     $lastname_href .= '?sort='.$request->sort.'&order='.$next_order;
                     $birthdate_href .= '?'. $default_birthdate_url;
 
                 }
                 else {
+                    $birthdate_order = $request->order;
                     $birthdate_href .= '?sort='.$request->sort.'&order='.$next_order;
                     $lastname_href  .= '?'. $default_lastname_url;
 
@@ -109,7 +111,7 @@ class StudentController extends Controller
                 
                 }
 
-                $students = $students->orderBy($sort, $order);
+                $students = $students->orderBy($sort, $request->order);
                 
             }
             else
@@ -126,7 +128,8 @@ class StudentController extends Controller
         return view('welcome', [
             'students'           => $students,
             'sort'               => $sort,
-            'order'              => $order,
+            'lastname_order'     => $lastname_order,
+            'birthdate_order'    => $birthdate_order,
             'searched_firstname' => $searched_firstname,
             'lastname_href'      => $lastname_href,
             'birthdate_href'     => $birthdate_href,
@@ -290,20 +293,6 @@ class StudentController extends Controller
 
         return redirect()->route('home')->with('successMsg', 'Student updated succussfully!');
     }
-
-    // public function order(Request $request)
-    // {
-
-    //     if ($request->has('lastname_form')) {
-    //         $students = Student::orderBy('last_name', 'asc')->get();
-    //         // dd($students);
-    //     } else if ($request->has('birthdate_form')) {
-    //         echo "birthdaate";
-    //     }
-
-    //     return Redirect::route('home')->with(['sorted_students' => $students]);
-    //     // return view('welcome', ['students' => $students]);
-    // }
 
     /**
      * Remove the specified resource from storage.

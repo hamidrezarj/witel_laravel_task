@@ -36,15 +36,25 @@
                 <th scope="col">Firstname</th>
                 <th scope="col">
 
-
-                    <a href="{{$lastname_href}}" class="sort_elements" id="sort_lastname"><i class="fas fa-sort"></i></a> Lastname
-
+                    @if(empty($lastname_order))
+                        <a href="{{$lastname_href}}" class="sort_elements" id="sort_lastname"><i class="fas fa-sort"></i></a> Lastname
+                    @elseif($lastname_order == 'asc')
+                        <a href="{{$lastname_href}}" class="sort_elements" id="sort_lastname"><i class="fas fa-sort-down"></i></a> Lastname
+                    @else
+                        <a href="{{$lastname_href}}" class="sort_elements" id="sort_lastname"><i class="fas fa-sort-up"></i></a> Lastname
+                    @endif
 
                 </th>
                 <th scope="col">Student ID</th>
                 <th scope="col">
 
-                    <a href="{{$birthdate_href}}" id="sort_birthdate"><i class="fas fa-sort"></i></a> Birth Date
+                    @if(empty($birthdate_order))
+                        <a href="{{$birthdate_href}}" class="sort_elements" id="sort_birthdate"><i class="fas fa-sort"></i></a> Lastname
+                    @elseif($birthdate_order == 'asc')
+                        <a href="{{$birthdate_href}}" class="sort_elements" id="sort_birthdate"><i class="fas fa-sort-down"></i></a> Lastname
+                    @else
+                        <a href="{{$birthdate_href}}" class="sort_elements" id="sort_birthdate"><i class="fas fa-sort-up"></i></a> Lastname
+                    @endif
 
                 </th>
                 <th scope="col">Sex</th>
