@@ -228,10 +228,19 @@ class StudentController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Request $request, $id)
     {
         $current_student = Student::find($id);
-        return view('edit', ['current_student' => $current_student, 'sex_types' => $this->sex_types]);
+     
+        $page_num = '';
+        if($request->has('page'))
+            $page_num = $request->page;
+
+        return view('edit', [
+            'current_student' => $current_student, 
+            'sex_types'       => $this->sex_types,
+            'page'            => $page_num,
+        ]);
     }
 
     /**
@@ -243,7 +252,6 @@ class StudentController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // dd($request);
         $today_date = Carbon::now()->toDate()->format($this->date_picker_format);
 
         $first_name = $request->first_name;
@@ -290,8 +298,13 @@ class StudentController extends Controller
 
         $student_to_update->save();
 
+        # Redirect to specific page if you were there before proceeding edit form. 
+        $params = [];
+        if($request->has('page')){
+            $params = ['page' => $request->page];
+        }
 
-        return redirect()->route('home')->with('successMsg', 'Student updated succussfully!');
+        return redirect()->route('home', $params)->with('successMsg', 'Student updated succussfully!');
     }
 
     /**

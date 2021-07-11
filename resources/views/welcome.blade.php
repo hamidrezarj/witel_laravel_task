@@ -80,7 +80,11 @@
                 <td>{{$student->birth_date}}</td>
                 <td>{{$student->sex}}</td>
                 <td>
-                    <a href="{{route('edit', $student->id)}}"><i class="fas fa-edit"></i></a>
+                    @if($students->currentPage() > 1)
+                        <a href="{{route('edit', ['id' => $student->id, 'page' => $students->currentPage()])}}" id="edit_link"><i class="fas fa-edit"></i></a>
+                    @else
+                        <a href="{{route('edit', ['id' => $student->id])}}" id="edit_link"><i class="fas fa-edit"></i></a>
+                    @endif
                     ||
                     <a href="{{route('delete', $student->id)}}"><i class="fa fa-minus-circle" aria-hidden="true"></i></a>
                 </td>
@@ -112,8 +116,11 @@
 @endsection
 
 @section('script')
-<script>
-
-</script>
+<!-- <script>
+$('#edit_link').click(function(event){
+    event.preventDefault();
+    console.log('clicked on link');
+});
+</script> -->
 
 @endsection

@@ -20,6 +20,9 @@
             {{csrf_field()}}
             @method('PUT')
 
+            <!-- Add an extra input for page number passed to this blade. -->
+            <input type="text" style="display: none;" name="page" value="{{$page}}">
+
             <div class="form-outline">
                 <label class="form-label" for="typeText">Firstname</label>
                 <input type="text" id="typeText" class="form-control" name="first_name" value="{{$current_student->first_name}}" />
