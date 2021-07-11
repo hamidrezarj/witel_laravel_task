@@ -1,4 +1,9 @@
 @extends('layouts.main')
+
+@section('styles')
+<link rel="stylesheet" href="{{url('public/css/styles.css')}}">
+@endsection
+
 @section('content')
 
 
@@ -6,10 +11,22 @@
 <div class="container">
 
     @if(session('bad_param_error'))
-        <div class="alert alert-danger" role="alert">
-            {{session('bad_param_error')}}
-        </div>
+    <div class="alert alert-danger" role="alert">
+        {{session('bad_param_error')}}
+    </div>
     @endif
+
+
+    <form method="GET" action="{{route('home')}}">
+        <!-- {{csrf_field()}} -->
+        <div class="input-group mb-3 ml-auto mt-2 col-4" id="search_field">
+            <input type="text" class="form-control" name="search_firstname" placeholder="Search here.." aria-label="Recipient's username" aria-describedby="basic-addon2">
+            <div class="input-group-append">
+                <button class="btn btn-outline-secondary" type="submit">Search</button>
+            </div>
+        </div>
+    </form>
+
 
     <table class="table table-striped table-hover">
         <thead>
@@ -19,23 +36,16 @@
                 <th scope="col">Firstname</th>
                 <th scope="col">
 
-                    @if($order == 'desc')
-                    <a href="{{''.url()->current().'?sort=last_name&order=asc'}}" id="sort_lastname"><i class="fas fa-sort"></i></a> Lastname
-
-                    @else
-                    <a href="{{''.url()->current().'?sort=last_name&order=desc'}}" id="sort_lastname"><i class="fas fa-sort"></i></a> Lastname
-                    @endif
+                    
+                    <a href="{{$lastname_href}}" class="sort_elements" id="sort_lastname"><i class="fas fa-sort"></i></a> Lastname
+                    
 
                 </th>
                 <th scope="col">Student ID</th>
                 <th scope="col">
 
-                    @if($order == 'desc')
-                    <a href="{{''.url()->current().'?sort=birth_date&order=asc'}}" id="sort_birthdate"><i class="fas fa-sort"></i></a> Birth Date
+                    <a href="{{$birthdate_href}}" id="sort_birthdate"><i class="fas fa-sort"></i></a> Birth Date
 
-                    @else
-                    <a href="{{''.url()->current().'?sort=birth_date&order=desc'}}" id="sort_birthdate"><i class="fas fa-sort"></i></a> Birth Date
-                    @endif
                 </th>
                 <th scope="col">Sex</th>
 
@@ -62,12 +72,6 @@
                 <td>
                     <a href="{{route('edit', $student->id)}}"><i class="fas fa-edit"></i></a>
                     ||
-
-                    <!-- <form method="POST" id="delete-form-{{$student->id}}" action="{{route('delete', $student->id)}}" style="display:none;">
-                        {{csrf_field()}}
-                        @method('DELETE');
-                    </form>
-                    <button type="submit" id="remove-btn"></button> -->
                     <a href="{{route('delete', $student->id)}}"><i class="fa fa-minus-circle" aria-hidden="true"></i></a>
                 </td>
 
@@ -77,9 +81,12 @@
         </tbody>
     </table>
 
-    <!-- Pagination section -->
-    {{$students->withQueryString()->links()}}
 
+
+    <!-- Pagination section -->
+    <div class="d-flex justify-content-center">
+        {{$students->withQueryString()->links()}}
+    </div>
 </div>
 
 
@@ -87,14 +94,16 @@
 
 @if(session('successMsg'))
 
-    <div class="alert alert-success" role="alert">
-        {{session('successMsg')}}
-    </div>
-    @endif
+<div class="alert alert-success" role="alert">
+    {{session('successMsg')}}
+</div>
+@endif
 
 @endsection
 
 @section('script')
-
+<script>
+    
+</script>
 
 @endsection
