@@ -11,10 +11,12 @@
   <!-- Bootstrap core CSS -->
   <link href="{{asset('public/bootstrap-md/css/bootstrap.min.css')}}" rel="stylesheet">
   <!-- Material Design Bootstrap -->
-  <link href="{{asset('public/bootstrap-md/css/mdb.min.css')}}" rel="stylesheet">
+  <!-- <link href="{{asset('public/bootstrap-md/css/mdb.min.css')}}" rel="stylesheet"> -->
   <!-- Your custom styles (optional) -->
   <link href="{{asset('public/bootstrap-md/css/style.css')}}" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datepicker/1.0.10/datepicker.min.css">
+  
+  @yield('styles')
 </head> 
 
 <body>
