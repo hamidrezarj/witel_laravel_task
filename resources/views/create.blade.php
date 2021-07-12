@@ -1,19 +1,12 @@
 @extends('layouts.main')
+
 @section('content')
 
-<div class="container">
-    <h3>Add Student!</h1>
+    <div class="container">
 
-        @if($errors->any())
-        <div class="alert alert-danger" role="alert">
-            @foreach($errors->all() as $error)
-
-            {{$error}}
-            <br>
-
-            @endforeach
-        </div>
-        @endif
+        <span class='d-flex justify-content-center mt-3'>                    
+            <img src="{{asset('storage/app/public/profile_images/default.png')}}" class="image-file rounded-circle" id="profile-img" height="100" alt="" loading="lazy" />    
+        </span>
 
         <form method="POST" action="{{route('store')}}" enctype="multipart/form-data">
             {{csrf_field()}}
@@ -51,30 +44,29 @@
                 </select>
             </div>
 
-            <!-- <div class="form-outline"> -->
-            <!-- <label class="input-group-text" for="inputGroupFile02">Upload</label> -->
+            <div class="file mt-2">
+                <input type="file" class="form-control" id="input-image" name="image_file" accept="image/*">
+            </div>
+            
 
-            <input type="file" class="form-control" id="inputGroupFile02" name="image_file" accept="image/*">
-            <!-- </div> -->
-
-            <div class="d-grid gap-2 col-6">
+            <div class="d-flex  justify-content-center mt-2">
                 <button class="btn btn-primary" type="submit">submit</button>
             </div>
         </form>
 
+        @if($errors->any())
+            <div class="alert alert-danger mt-3" role="alert">
+                @foreach($errors->all() as $error)
 
-</div><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+                {{$error}}
+                <br>
 
+                @endforeach
+            </div>
+        @endif
+    </div>
 @endsection
 
 @section('script')
-<script>
-    $('#datepicker').click(function() {
-        console.log('fslkdsdjflk;sdjf');
-    });
-
-    $(function() {
-        $('[data-toggle="datepicker"]').datepicker();
-    });
-</script>
+    <script src="{{asset('public/js/script.js')}}"></script>
 @endsection
