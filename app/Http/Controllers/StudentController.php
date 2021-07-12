@@ -236,6 +236,8 @@ class StudentController extends Controller
         if($request->has('page'))
             $page_num = $request->page;
 
+        Redirect::setIntendedUrl(url()->previous());
+
         return view('edit', [
             'current_student' => $current_student, 
             'sex_types'       => $this->sex_types,
@@ -299,12 +301,13 @@ class StudentController extends Controller
         $student_to_update->save();
 
         # Redirect to specific page if you were there before proceeding edit form. 
-        $params = [];
-        if($request->has('page')){
-            $params = ['page' => $request->page];
-        }
+        // $params = [];
+        // if($request->has('page')){
+        //     $params = ['page' => $request->page];
+        // }
 
-        return redirect()->route('home', $params)->with('successMsg', 'Student updated succussfully!');
+        return redirect()->intended()->with('successMsg', 'Student updated succussfully!');
+        // return redirect()->route('home', $params)->with('successMsg', 'Student updated succussfully!');
     }
 
     /**
@@ -313,9 +316,35 @@ class StudentController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request, $id)
     {
         Student::find($id)->delete();
-        return redirect()->route('home')->with('successMsg', 'Student deleted succussfully!');
+        $page_num = 0;
+        // $params = [];
+        if($request->has('page') && $request->has('count')){
+            
+            if(intval($request->count) > 1)
+                $page_num = $request->page;
+            else
+                $page_num = intval($request->page) - 1;
+            
+            // $params = ['page' => $page_num];
+        }
+        echo 'page number = '.$page_num;
+
+        $intended_url = url()->previous();
+        
+        $old_string = 'page='.$request->page;
+        $new_string = 'page='.$page_num;
+
+        # now we should replace page number in previous url with $page_num value
+        if(Str::contains($intended_url, $old_string)){
+            $intended_url = Str::replace($old_string, $new_string, $intended_url);
+        }
+
+        Redirect::setIntendedUrl($intended_url);
+
+        // return redirect()->route('home', $params)->with('successMsg', 'Student deleted succussfully!');
+        return redirect()->intended()->with('successMsg', 'Student deleted succussfully!');
     }
 }

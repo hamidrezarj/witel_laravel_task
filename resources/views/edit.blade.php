@@ -73,10 +73,7 @@
 
 @section('script')
 <script>
-    $('#datepicker').click(function() {
-        console.log('fslkdsdjflk;sdjf');
-    });
-
+    
     $(function() {
         $('[data-toggle="datepicker"]').datepicker();
     });

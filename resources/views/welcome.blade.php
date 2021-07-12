@@ -6,8 +6,6 @@
 
 @section('content')
 
-
-
 <div class="container">
 
     @if(session('bad_param_error'))
@@ -49,11 +47,11 @@
                 <th scope="col">
 
                     @if(empty($birthdate_order))
-                        <a href="{{$birthdate_href}}" class="sort_elements" id="sort_birthdate"><i class="fas fa-sort"></i></a> Lastname
+                        <a href="{{$birthdate_href}}" class="sort_elements" id="sort_birthdate"><i class="fas fa-sort"></i></a> Birth date
                     @elseif($birthdate_order == 'asc')
-                        <a href="{{$birthdate_href}}" class="sort_elements" id="sort_birthdate"><i class="fas fa-sort-down"></i></a> Lastname
+                        <a href="{{$birthdate_href}}" class="sort_elements" id="sort_birthdate"><i class="fas fa-sort-down"></i></a> Birth date
                     @else
-                        <a href="{{$birthdate_href}}" class="sort_elements" id="sort_birthdate"><i class="fas fa-sort-up"></i></a> Lastname
+                        <a href="{{$birthdate_href}}" class="sort_elements" id="sort_birthdate"><i class="fas fa-sort-up"></i></a> Birth date
                     @endif
 
                 </th>
@@ -80,13 +78,19 @@
                 <td>{{$student->birth_date}}</td>
                 <td>{{$student->sex}}</td>
                 <td>
+                    <!-- <h3>{{$students->count()}}</h3> -->
                     @if($students->currentPage() > 1)
                         <a href="{{route('edit', ['id' => $student->id, 'page' => $students->currentPage()])}}" id="edit_link"><i class="fas fa-edit"></i></a>
                     @else
                         <a href="{{route('edit', ['id' => $student->id])}}" id="edit_link"><i class="fas fa-edit"></i></a>
                     @endif
                     ||
-                    <a href="{{route('delete', $student->id)}}"><i class="fa fa-minus-circle" aria-hidden="true"></i></a>
+                    
+                    @if($students->currentPage() > 1)
+                        <a href="{{route('delete', ['id' => $student->id, 'page' => $students->currentPage(), 'count' => $students->count()])}}"><i class="fa fa-minus-circle" aria-hidden="true"></i></a>
+                    @else
+                        <a href="{{route('delete', ['id' => $student->id])}}"><i class="fa fa-minus-circle" aria-hidden="true"></i></a>
+                    @endif
                 </td>
 
 
@@ -101,26 +105,18 @@
     <div class="d-flex justify-content-center">
         {{$students->links('vendor.pagination.custom')}}
     </div>
+
+    @if(session('successMsg'))
+        <div class="alert alert-success" role="alert">
+            {{session('successMsg')}}
+        </div>
+    @endif
 </div>
 
 
-<br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br><br>
-
-@if(session('successMsg'))
-
-<div class="alert alert-success" role="alert">
-    {{session('successMsg')}}
-</div>
-@endif
 
 @endsection
 
 @section('script')
-<!-- <script>
-$('#edit_link').click(function(event){
-    event.preventDefault();
-    console.log('clicked on link');
-});
-</script> -->
 
 @endsection

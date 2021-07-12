@@ -14,14 +14,12 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', 'StudentController@index')->name('home');
-// Route::match(['get', 'post'], '/', 'StudentController@index')->name('home');
 Route::get('/create', 'StudentController@create')->name('create');
 Route::post('/create', 'StudentController@store')->name('store');
 Route::get('/edit/{id}', 'StudentController@edit')->name('edit');
 Route::put('/update/{id}', 'StudentController@update')->name('update');
 Route::get('/delete/{id}', 'StudentController@destroy')->name('delete');
 
-// Route::post('/create/order', 'StudentController@order')->name('order');
 
 
 

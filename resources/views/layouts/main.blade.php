@@ -26,8 +26,9 @@
 
     @yield('content')
 
-    @include('layouts.footer')
-
+    <div class="footer fixed-bottom">
+      @include('layouts.footer')
+    </div>
   <!-- Start your project here-->
 
 
