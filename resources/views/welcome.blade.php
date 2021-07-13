@@ -17,10 +17,28 @@
 
     <form method="GET" action="{{route('home')}}">
         <!-- {{csrf_field()}} -->
-        <div class="input-group mb-3 ml-auto mt-2 col-4" id="search_field">
-            <input type="text" class="form-control" name="search_firstname" placeholder="Search here.." aria-label="Recipient's username" aria-describedby="basic-addon2">
-            <div class="input-group-append">
-                <button class="btn btn-outline-secondary" type="submit">Search</button>
+        <div class="d-flex flex-row">
+            <div class="input-group mb-3 ml-auto mt-2 col-4" id="search_field">
+
+                <input type="text" class="form-control" name="search_firstname" id="search_firstname" value="{{$searched_firstname}}" placeholder="Search here.." aria-label="Recipient's username" aria-describedby="basic-addon2">
+                <div class="">
+                    <button class="btn btn-outline-secondary" type="submit">Search</button>
+                </div>
+            </div>
+            
+            <div class="form-inline">
+                <label class="form-label" for="typeText">Sex</label>
+                <select name="search_sex" id="search_sex" class="form-control">
+                    <option value="">Select ...</option>
+
+                    @foreach($sex_types as $type)
+                        @if($type == $searched_sex)
+                            <option value="{{$type}}" selected>{{$type}}</option>
+                        @else
+                            <option value="{{$type}}">{{$type}}</option>
+                        @endif
+                    @endforeach
+                </select>
             </div>
         </div>
     </form>
@@ -118,5 +136,46 @@
 @endsection
 
 @section('script')
+    <script>
 
+        // Autocomplete logic using AJAX
+        $('#search_firstname').autocomplete({
+            source: function(request, response){
+
+                $.ajax({
+                    type: "GET",
+                    url: "{{route('search_ajax')}}",
+                    dataType: 'json',
+                    data: {
+                        //query parameter => ?search_firstname = sth
+                        search_firstname:  request.term,
+                    },
+                    
+                    success: function(data){
+                        console.log(data);
+                        
+                        response($.map(data, function(item){
+                            return item.first_name;
+                        }));
+                    },
+                    error: function(data){
+                        console.log('errors: ', data);
+                    }
+                });
+            },
+
+            minLength: 1,
+
+        });
+
+        document.getElementById('search_sex').addEventListener('change', (event) =>{
+
+            let val = event.target.value;
+            if(val){
+                let base_url = '{{url()->current()}}';
+                base_url += '?search_sex=' + val;
+                window.location.href = base_url; 
+            }
+        });
+    </script>
 @endsection

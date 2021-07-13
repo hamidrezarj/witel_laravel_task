@@ -15,7 +15,8 @@
   <!-- Your custom styles (optional) -->
   <link href="{{asset('public/bootstrap-md/css/style.css')}}" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/datepicker/1.0.10/datepicker.min.css">
-  
+  <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
   @yield('styles')
 </head> 
 
@@ -45,6 +46,9 @@
   <script type="text/javascript" src="{{asset('public/bootstrap-md/js/bootstrap.min.js')}}"></script>
   <!-- MDB core JavaScript -->
   <script type="text/javascript" src="{{asset('public/bootstrap-md/js/mdb.min.js')}}"></script>
+
+  <script src="http://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="http://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
 
   @yield('script')
 </body>

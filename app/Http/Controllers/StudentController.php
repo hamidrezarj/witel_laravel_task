@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\Student;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Redirect;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
@@ -27,110 +26,160 @@ class StudentController extends Controller
         $lastname_order = '';
         $birthdate_order = '';
         $searched_firstname = '';
+        $searched_sex = '';
         $default_lastname_url = 'sort=last_name&order=desc';
         $default_birthdate_url = 'sort=birth_date&order=desc';
 
-        $lastname_href = url()->current().'/';
+        $lastname_href = url()->current() . '/';
         $birthdate_href = $lastname_href;
         $students = new Student();
-        if($request->has('search_firstname')){
 
+        if ($request->has('search_firstname') && isset($request->search_firstname)) {
             $searched_firstname = $request->search_firstname;
-            $students = $students->where('first_name', 'LIKE', '%'.$searched_firstname.'%');
-            
-            $lastname_href .= ('?search_firstname='. $searched_firstname);
-            $birthdate_href .= ('?search_firstname='. $searched_firstname);
-            
-            # if url consists of both filter and sort, do filter followed by sort.
-            if($request->has('sort') && $request->has('order')){
+            $students = $students->where('first_name', 'LIKE', '%' . $searched_firstname . '%');
 
-                if(($request->sort == 'last_name' || $request->sort == 'birth_date') && ($request->order == 'asc' || $request->order == 'desc')){
+            $lastname_href .= ('?search_firstname=' . $searched_firstname);
+            $birthdate_href .= ('?search_firstname=' . $searched_firstname);
+
+
+            if ($request->has('search_sex') && isset($request->search_sex)) {
+                $searched_sex = $request->search_sex;
+                $lastname_href .= '&' . 'search_sex=' . $searched_sex;
+                $birthdate_href .= '&' . 'search_sex=' . $searched_sex;
+
+                $students = $students->where('sex', $searched_sex);
+            }
+
+            # if url consists of both filter and sort, do filter followed by sort.
+            if ($request->has('sort') && $request->has('order')) {
+
+                if (($request->sort == 'last_name' || $request->sort == 'birth_date') && ($request->order == 'asc' || $request->order == 'desc')) {
                     $sort = $request->sort;
                     $students = $students->orderBy($sort, $request->order);
 
-                    if($request->order == 'desc')
+                    if ($request->order == 'desc')
                         $next_order = 'asc';
-                    else 
+                    else
                         $next_order = 'desc';
-                    
-                    if($sort == 'last_name'){
+
+                    if ($sort == 'last_name') {
                         $lastname_order = $request->order;
-                        $lastname_href .= '&'.'sort='.$request->sort.'&order='.$next_order;
-                        $birthdate_href .= '&'. $default_birthdate_url;
-                    }
-                    else {
+                        $lastname_href .= '&' . 'sort=' . $request->sort . '&order=' . $next_order;
+                        $birthdate_href .= '&' . $default_birthdate_url;
+                    } else {
                         $birthdate_order = $request->order;
-                        $birthdate_href .= '&'.'sort='.$request->sort.'&order='.$next_order;
-                        $lastname_href   .= '&'. $default_lastname_url;
-                        
+                        $birthdate_href .= '&' . 'sort=' . $request->sort . '&order=' . $next_order;
+                        $lastname_href   .= '&' . $default_lastname_url;
                     }
-                
-                }
-                else
+                } else
                     return redirect()->route('home')->with('bad_param_error', "'Don't fucking mess with my code, bitch.");
-            }
-            else {
+            } else {
                 # make default url for sort.
-                $lastname_href   .= '&'. $default_lastname_url;
-                $birthdate_href  .= '&'. $default_birthdate_url;
+                $lastname_href   .= '&' . $default_lastname_url;
+                $birthdate_href  .= '&' . $default_birthdate_url;
+            }
+        } else if ($request->has('search_sex') && isset($request->search_sex)) {
+
+            $searched_sex = $request->search_sex;
+            $students = $students->where('sex', $searched_sex);
+
+            $lastname_href .= ('?search_sex=' . $searched_sex);
+            $birthdate_href .= ('?search_sex=' . $searched_sex);
+
+            if ($request->has('search_firstname') && isset($request->search_firstname)) {
+                $lastname_href .= '&' . 'search_firstname=' . $searched_firstname;
+                $birthdate_href .= '&' . 'search_firstname=' . $searched_firstname;
+
+                $searched_firstname = $request->search_firstname;
+                $students = $students->where('first_name', 'LIKE', '%' . $searched_firstname . '%');
             }
 
+            # if url consists of both filter and sort, do filter followed by sort.
+            if ($request->has('sort') && $request->has('order')) {
+
+                if (($request->sort == 'last_name' || $request->sort == 'birth_date') && ($request->order == 'asc' || $request->order == 'desc')) {
+                    $sort = $request->sort;
+                    $students = $students->orderBy($sort, $request->order);
+
+                    if ($request->order == 'desc')
+                        $next_order = 'asc';
+                    else
+                        $next_order = 'desc';
+
+                    if ($sort == 'last_name') {
+                        $lastname_order = $request->order;
+                        $lastname_href .= '&' . 'sort=' . $request->sort . '&order=' . $next_order;
+                        $birthdate_href .= '&' . $default_birthdate_url;
+                    } else {
+                        $birthdate_order = $request->order;
+                        $birthdate_href .= '&' . 'sort=' . $request->sort . '&order=' . $next_order;
+                        $lastname_href   .= '&' . $default_lastname_url;
+                    }
+                } else
+                    return redirect()->route('home')->with('bad_param_error', "'Don't fucking mess with my code, bitch.");
+            } else {
+                # make default url for sort.
+                $lastname_href   .= '&' . $default_lastname_url;
+                $birthdate_href  .= '&' . $default_birthdate_url;
+            }
         }
 
         # THIS IS THE MOST IMPORTANT PIECE OF THIS PROJECT TILL NOW..
         else if ($request->has('sort') && $request->has('order')) {
-            
-            if(($request->sort == 'last_name' || $request->sort == 'birth_date') && ($request->order == 'asc' || $request->order == 'desc')){
+
+            if (($request->sort == 'last_name' || $request->sort == 'birth_date') && ($request->order == 'asc' || $request->order == 'desc')) {
                 $sort = $request->sort;
-                    
-                if($request->order == 'desc')
+
+                if ($request->order == 'desc')
                     $next_order = 'asc';
-                else 
+                else
                     $next_order = 'desc';
-                
-                if($sort == 'last_name'){
+
+                if ($sort == 'last_name') {
                     $lastname_order = $request->order;
-                    $lastname_href .= '?sort='.$request->sort.'&order='.$next_order;
-                    $birthdate_href .= '?'. $default_birthdate_url;
-
-                }
-                else {
+                    $lastname_href .= '?sort=' . $request->sort . '&order=' . $next_order;
+                    $birthdate_href .= '?' . $default_birthdate_url;
+                } else {
                     $birthdate_order = $request->order;
-                    $birthdate_href .= '?sort='.$request->sort.'&order='.$next_order;
-                    $lastname_href  .= '?'. $default_lastname_url;
+                    $birthdate_href .= '?sort=' . $request->sort . '&order=' . $next_order;
+                    $lastname_href  .= '?' . $default_lastname_url;
+                }
 
+                if ($request->has('search_sex') && isset($request->search_sex)) {
+                    $searched_sex = $request->search_sex;
+                    $lastname_href .= '&' . 'search_sex=' . $searched_sex;
+                    $birthdate_href .= '&' . 'search_sex=' . $searched_sex;
+
+                    $students = $students->where('sex', $searched_sex);
                 }
 
                 # if url consists of both filter and sort, do filter followed by search. 
-                if($request->has('search_firstname')){
-                    $lastname_href .= '&'.'search_firstname='. $searched_firstname;    
-                    $birthdate_href .= '&'.'search_firstname='. $searched_firstname;    
+                if ($request->has('search_firstname') && isset($request->search_firstname)) {
+                    $lastname_href .= '&' . 'search_firstname=' . $searched_firstname;
+                    $birthdate_href .= '&' . 'search_firstname=' . $searched_firstname;
 
                     $searched_firstname = $request->search_firstname;
-                    $students = $students->where('first_name', 'LIKE', '%'.$searched_firstname.'%');
-                
+                    $students = $students->where('first_name', 'LIKE', '%' . $searched_firstname . '%');
                 }
 
                 $students = $students->orderBy($sort, $request->order);
-                
-            }
-            else
+            } else
                 return redirect()->route('home')->with('bad_param_error', "'Don't fucking mess with my code, bitch.");
-
-        }
-        else{
-            $lastname_href  .= '?'. $default_lastname_url;
-            $birthdate_href .= '?'. $default_birthdate_url;
+        } else {
+            $lastname_href  .= '?' . $default_lastname_url;
+            $birthdate_href .= '?' . $default_birthdate_url;
         }
 
         $students = $students->paginate(5)->withQueryString();
-       
+
         return view('welcome', [
+            'sex_types'          => $this->sex_types,
             'students'           => $students,
             'sort'               => $sort,
             'lastname_order'     => $lastname_order,
             'birthdate_order'    => $birthdate_order,
             'searched_firstname' => $searched_firstname,
+            'searched_sex'       => $searched_sex,
             'lastname_href'      => $lastname_href,
             'birthdate_href'     => $birthdate_href,
         ]);
@@ -185,6 +234,7 @@ class StudentController extends Controller
 
         ])->validate();
 
+
         // convert to y-m-d format.
         $formatted_birthdate = Carbon::parse($request->birth_date)->format('Y-m-d');
 
@@ -231,15 +281,15 @@ class StudentController extends Controller
     public function edit(Request $request, $id)
     {
         $current_student = Student::find($id);
-     
+
         $page_num = '';
-        if($request->has('page'))
+        if ($request->has('page'))
             $page_num = $request->page;
 
         Redirect::setIntendedUrl(url()->previous());
 
         return view('edit', [
-            'current_student' => $current_student, 
+            'current_student' => $current_student,
             'sex_types'       => $this->sex_types,
             'page'            => $page_num,
         ]);
@@ -321,24 +371,24 @@ class StudentController extends Controller
         Student::find($id)->delete();
         $page_num = 0;
         // $params = [];
-        if($request->has('page') && $request->has('count')){
-            
-            if(intval($request->count) > 1)
+        if ($request->has('page') && $request->has('count')) {
+
+            if (intval($request->count) > 1)
                 $page_num = $request->page;
             else
                 $page_num = intval($request->page) - 1;
-            
+
             // $params = ['page' => $page_num];
         }
-        echo 'page number = '.$page_num;
+        echo 'page number = ' . $page_num;
 
         $intended_url = url()->previous();
-        
-        $old_string = 'page='.$request->page;
-        $new_string = 'page='.$page_num;
+
+        $old_string = 'page=' . $request->page;
+        $new_string = 'page=' . $page_num;
 
         # now we should replace page number in previous url with $page_num value
-        if(Str::contains($intended_url, $old_string)){
+        if (Str::contains($intended_url, $old_string)) {
             $intended_url = Str::replace($old_string, $new_string, $intended_url);
         }
 
@@ -346,5 +396,21 @@ class StudentController extends Controller
 
         // return redirect()->route('home', $params)->with('successMsg', 'Student deleted succussfully!');
         return redirect()->intended()->with('successMsg', 'Student deleted succussfully!');
+    }
+
+    public function search_ajax(Request $request)
+    {
+
+        $students = new Student();
+        if ($request->has('search_firstname')) {
+            $students = Student::where('first_name', 'LIKE', '%' . $request->search_firstname . '%')->get();
+
+            if (count($students) == 0)
+                return response()->json('No results found!', 404);
+            else
+                return response()->json($students);
+                
+        } else
+            return response()->json($students, 404);
     }
 }

@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\StudentController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -20,13 +21,4 @@ Route::get('/edit/{id}', 'StudentController@edit')->name('edit');
 Route::put('/update/{id}', 'StudentController@update')->name('update');
 Route::get('/delete/{id}', 'StudentController@destroy')->name('delete');
 
-
-
-
-Route::get('/hello', function () {
-    return "HELLO THERE!";
-});
-
-Route::get('/user_id/{id}', function ($id) {
-    return "Your id is: " .$id;
-});
+Route::get('/search', [StudentController::class, 'search_ajax'])->name('search_ajax');
