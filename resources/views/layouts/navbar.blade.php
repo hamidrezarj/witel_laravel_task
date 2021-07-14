@@ -8,12 +8,13 @@
 
   <div class="collapse navbar-collapse" id="navbarSupportedContent">
     <ul class="navbar-nav mr-auto">
-      @if(url()->current() == route('home'))
+
+      @if(url()->current() == route('index'))
         <li class="nav-item active">
       @else
         <li class="nav-item">
       @endif
-        <a class="nav-link" href="{{route('home')}}">Home <span class="sr-only">(current)</span></a>
+        <a class="nav-link" href="{{route('index')}}">Home <span class="sr-only">(current)</span></a>
       </li>
 
       @if(url()->current() == route('create'))
@@ -23,6 +24,21 @@
       @endif
         <a class="nav-link" href="{{route('create')}}">Add Students</a>
       </li>
+
+      
+      @if(Auth::check())
+        <li class="nav-item">
+          <form method="POST" id="logout-form" action="{{route('logout')}}">
+            {{csrf_field()}}
+          </form>
+          <a class="nav-link" type="submit" onclick="event.preventDefault();
+                                                    document.getElementById('logout-form').submit();">Logout</a>
+        </li>
+      @else
+        <li class="nav-item">
+          <a class="nav-link" href="{{route('login')}}">Login</a>
+        </li>
+      @endif
 
     </ul>
 
