@@ -12,9 +12,14 @@ use Illuminate\Support\Str;
 
 class StudentController extends Controller
 {
-
     private $sex_types = ['Male', 'Female', 'Other'];
     private $date_picker_format = 'm/d/Y';
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -72,7 +77,7 @@ class StudentController extends Controller
                         $lastname_href   .= '&' . $default_lastname_url;
                     }
                 } else
-                    return redirect()->route('home')->with('bad_param_error', "'Don't fucking mess with my code, bitch.");
+                    return redirect()->route('index')->with('bad_param_error', "'Don't fucking mess with my code, bitch.");
             } else {
                 # make default url for sort.
                 $lastname_href   .= '&' . $default_lastname_url;
@@ -164,7 +169,7 @@ class StudentController extends Controller
 
                 $students = $students->orderBy($sort, $request->order);
             } else
-                return redirect()->route('home')->with('bad_param_error', "'Don't fucking mess with my code, bitch.");
+                return redirect()->route('index')->with('bad_param_error', "'Don't fucking mess with my code, bitch.");
         } else {
             $lastname_href  .= '?' . $default_lastname_url;
             $birthdate_href .= '?' . $default_birthdate_url;
@@ -184,6 +189,7 @@ class StudentController extends Controller
             'birthdate_href'     => $birthdate_href,
         ]);
     }
+
 
 
     /**
@@ -394,7 +400,6 @@ class StudentController extends Controller
 
         Redirect::setIntendedUrl($intended_url);
 
-        // return redirect()->route('home', $params)->with('successMsg', 'Student deleted succussfully!');
         return redirect()->intended()->with('successMsg', 'Student deleted succussfully!');
     }
 
