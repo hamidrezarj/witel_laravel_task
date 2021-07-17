@@ -15,7 +15,7 @@
     @endif
 
 
-    <form method="GET" action="{{route('home')}}">
+    <form method="GET" action="{{route('index')}}">
         <!-- {{csrf_field()}} -->
         <div class="d-flex flex-row">
             <div class="input-group mb-3 ml-auto mt-2 col-4" id="search_field">
@@ -81,7 +81,11 @@
         <tbody>
             @foreach($students as $student)
             <tr>
-                <th scope="row">{{$loop->iteration}}</th>
+                @if(auth()->user()->can('delete', $student) && auth()->user()->can('update-student', $student))
+                    <th scope="row">{{$loop->iteration}}</th>
+                @else
+                    <th scope="row" style="color: red;">{{$loop->iteration}}</th>
+                @endif
 
                 @if(empty($student->image_path) || is_null($student->image_path))
                 <th scope="row"><img src="{{asset('storage/app/public/profile_images/default.png')}}" class="rounded-circle" height="50" alt="" loading="lazy" /></th>
@@ -127,6 +131,12 @@
     @if(session('successMsg'))
         <div class="alert alert-success" role="alert">
             {{session('successMsg')}}
+        </div>
+    @endif
+
+    @if(session('errorMsg'))
+        <div class="alert alert-danger" role="alert">
+            {{session('errorMsg')}}
         </div>
     @endif
 </div>

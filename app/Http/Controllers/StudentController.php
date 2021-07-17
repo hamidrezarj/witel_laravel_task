@@ -5,10 +5,14 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Student;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
+use app\Models\User;
+use App\Policies\StudentPolicy;
+use Illuminate\Support\Facades\Gate;
 
 class StudentController extends Controller
 {
@@ -197,8 +201,12 @@ class StudentController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create()
+    public function create(Request $request)
     {
+        if($request->user()->cannot('create', Student::class)){
+            abort(403, "Oops! you can't have more than one student account at any time :(");
+        }
+
         return view('create', ['sex_types' => $this->sex_types]);
     }
 
@@ -210,11 +218,12 @@ class StudentController extends Controller
      */
     public function store(Request $request)
     {
+        # first assign to student which is being created its corresponding user model.
+        $user_id = Auth::user()->id;
+        $owner_user = User::find($user_id);        
         $today_date = Carbon::now()->toDate()->format($this->date_picker_format);
-
         $first_name = $request->first_name;
         $last_name = $request->last_name;
-
 
         Validator::make($request->all(), [
 
@@ -236,8 +245,7 @@ class StudentController extends Controller
                         ->where('last_name', $last_name);
                 }),
             ],
-
-
+            'user_id' => 'unique:students',
         ])->validate();
 
 
@@ -254,17 +262,12 @@ class StudentController extends Controller
         if ($request->hasFile('image_file')) {
 
             $request->image_file->store('profile_images', 'public');
-            // $file_name = $request->image_file->getClientOriginalName();
             $file_name = $request->image_file->hashName();
             $student->image_path = $file_name;
-
-            // Storage::put($file_name, $request->image_file);
-
         }
 
-        $student->save();
-
-        return redirect()->route('home')->with('successMsg', 'Student created successfully!');
+        $owner_user->student()->save($student);
+        return redirect()->route('index')->with('successMsg', 'Student created successfully!');
     }
 
     /**
@@ -287,6 +290,13 @@ class StudentController extends Controller
     public function edit(Request $request, $id)
     {
         $current_student = Student::find($id);
+        
+        # check if user has permission to edit.
+        $response = Gate::inspect('update-student', $current_student);
+        if(!$response->allowed())
+        {
+            abort(403, $response->message());
+        }
 
         $page_num = '';
         if ($request->has('page'))
@@ -355,15 +365,7 @@ class StudentController extends Controller
         }
 
         $student_to_update->save();
-
-        # Redirect to specific page if you were there before proceeding edit form. 
-        // $params = [];
-        // if($request->has('page')){
-        //     $params = ['page' => $request->page];
-        // }
-
         return redirect()->intended()->with('successMsg', 'Student updated succussfully!');
-        // return redirect()->route('home', $params)->with('successMsg', 'Student updated succussfully!');
     }
 
     /**
@@ -374,9 +376,13 @@ class StudentController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        Student::find($id)->delete();
+        $student = Student::find($id);
+        if($request->user()->cannot('delete', $student)){
+            abort(403, "you don't have permission to delete this!");
+        }
+
+        $student->delete();
         $page_num = 0;
-        // $params = [];
         if ($request->has('page') && $request->has('count')) {
 
             if (intval($request->count) > 1)
@@ -384,9 +390,7 @@ class StudentController extends Controller
             else
                 $page_num = intval($request->page) - 1;
 
-            // $params = ['page' => $page_num];
         }
-        echo 'page number = ' . $page_num;
 
         $intended_url = url()->previous();
 
