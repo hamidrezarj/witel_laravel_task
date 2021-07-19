@@ -5,16 +5,25 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Student;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Redirect;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
+use app\Models\User;
+use Illuminate\Auth\Access\Events\GateEvaluated;
+use Illuminate\Support\Facades\Gate;
 
 class StudentController extends Controller
 {
-
     private $sex_types = ['Male', 'Female', 'Other'];
     private $date_picker_format = 'm/d/Y';
+
+    public function __construct()
+    {
+        $this->middleware('auth');
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -72,7 +81,7 @@ class StudentController extends Controller
                         $lastname_href   .= '&' . $default_lastname_url;
                     }
                 } else
-                    return redirect()->route('home')->with('bad_param_error', "'Don't fucking mess with my code, bitch.");
+                    return redirect()->route('index')->with('bad_param_error', "'Don't fucking mess with my code, bitch.");
             } else {
                 # make default url for sort.
                 $lastname_href   .= '&' . $default_lastname_url;
@@ -164,7 +173,7 @@ class StudentController extends Controller
 
                 $students = $students->orderBy($sort, $request->order);
             } else
-                return redirect()->route('home')->with('bad_param_error', "'Don't fucking mess with my code, bitch.");
+                return redirect()->route('index')->with('bad_param_error', "'Don't fucking mess with my code, bitch.");
         } else {
             $lastname_href  .= '?' . $default_lastname_url;
             $birthdate_href .= '?' . $default_birthdate_url;
@@ -186,6 +195,7 @@ class StudentController extends Controller
     }
 
 
+
     /**
      * Show the form for creating a new resource.
      *
@@ -193,6 +203,7 @@ class StudentController extends Controller
      */
     public function create()
     {
+        $this->authorize('create', Student::class);
         return view('create', ['sex_types' => $this->sex_types]);
     }
 
@@ -204,11 +215,12 @@ class StudentController extends Controller
      */
     public function store(Request $request)
     {
+        # first assign to student which is being created its corresponding user model.
+        $user_id = Auth::user()->id;
+        $owner_user = User::find($user_id);
         $today_date = Carbon::now()->toDate()->format($this->date_picker_format);
-
         $first_name = $request->first_name;
         $last_name = $request->last_name;
-
 
         Validator::make($request->all(), [
 
@@ -230,8 +242,7 @@ class StudentController extends Controller
                         ->where('last_name', $last_name);
                 }),
             ],
-
-
+            'user_id' => 'unique:students',
         ])->validate();
 
 
@@ -248,17 +259,12 @@ class StudentController extends Controller
         if ($request->hasFile('image_file')) {
 
             $request->image_file->store('profile_images', 'public');
-            // $file_name = $request->image_file->getClientOriginalName();
             $file_name = $request->image_file->hashName();
             $student->image_path = $file_name;
-
-            // Storage::put($file_name, $request->image_file);
-
         }
 
-        $student->save();
-
-        return redirect()->route('home')->with('successMsg', 'Student created successfully!');
+        $owner_user->student()->save($student);
+        return redirect()->route('index')->with('successMsg', 'Student created successfully!');
     }
 
     /**
@@ -281,6 +287,8 @@ class StudentController extends Controller
     public function edit(Request $request, $id)
     {
         $current_student = Student::find($id);
+
+        $this->authorize('update', $current_student);
 
         $page_num = '';
         if ($request->has('page'))
@@ -349,15 +357,7 @@ class StudentController extends Controller
         }
 
         $student_to_update->save();
-
-        # Redirect to specific page if you were there before proceeding edit form. 
-        // $params = [];
-        // if($request->has('page')){
-        //     $params = ['page' => $request->page];
-        // }
-
         return redirect()->intended()->with('successMsg', 'Student updated succussfully!');
-        // return redirect()->route('home', $params)->with('successMsg', 'Student updated succussfully!');
     }
 
     /**
@@ -368,19 +368,21 @@ class StudentController extends Controller
      */
     public function destroy(Request $request, $id)
     {
-        Student::find($id)->delete();
+        $student = Student::find($id);
+        
+        $response = Gate::inspect('delete', $student);
+        if(!$response->allowed())
+            abort(403, $response->message());
+
+        $student->delete();
         $page_num = 0;
-        // $params = [];
         if ($request->has('page') && $request->has('count')) {
 
             if (intval($request->count) > 1)
                 $page_num = $request->page;
             else
                 $page_num = intval($request->page) - 1;
-
-            // $params = ['page' => $page_num];
         }
-        echo 'page number = ' . $page_num;
 
         $intended_url = url()->previous();
 
@@ -394,7 +396,6 @@ class StudentController extends Controller
 
         Redirect::setIntendedUrl($intended_url);
 
-        // return redirect()->route('home', $params)->with('successMsg', 'Student deleted succussfully!');
         return redirect()->intended()->with('successMsg', 'Student deleted succussfully!');
     }
 
@@ -409,7 +410,6 @@ class StudentController extends Controller
                 return response()->json('No results found!', 404);
             else
                 return response()->json($students);
-                
         } else
             return response()->json($students, 404);
     }
