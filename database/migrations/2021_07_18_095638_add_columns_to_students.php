@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddUserToStudentsTable extends Migration
+class AddColumnsToStudents extends Migration
 {
     /**
      * Run the migrations.
@@ -14,9 +14,12 @@ class AddUserToStudentsTable extends Migration
     public function up()
     {
         Schema::table('students', function (Blueprint $table) {
-            
-            $table->unsignedBigInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
+            $table->string('first_name');
+            $table->string('last_name');
+            $table->string('student_id')->unique();
+            $table->date('birth_date');
+            $table->enum('sex', ['Male', 'Female', 'Other']);
+            $table->string('image_path')->nullable();
         });
     }
 
@@ -28,8 +31,7 @@ class AddUserToStudentsTable extends Migration
     public function down()
     {
         Schema::table('students', function (Blueprint $table) {
-            //
-            $table->dropForeign(['user_id']);
+            $table->dropColumn(['first_name', 'last_name', 'student_id', 'birth_date', 'sex', 'image_path']);
         });
     }
 }

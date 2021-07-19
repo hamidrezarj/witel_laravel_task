@@ -23,13 +23,25 @@ class StudentPolicy
 
     public function create(User $user)
     {
-        # allowed to create iff user hasn't student associated with it.
-        return ($user->student == null)? Response::allow(): Response::deny();
-    
+
+        $role = $user->getRole();
+
+        if ($role->name == 'guest_user') {
+            return Response::deny('you are not allowed to create student!');
+        } else if ($user->student()->first() != null) {
+            return Response::deny("Oops! you can't have more than one student account at any time :(");
+        } else {
+            return Response::allow();
+        }
+    }
+
+    public function update(User $user, Student $student)
+    {
+        return $user->hasPermission($student) ? Response::allow() : Response::deny("sorry! You aren't owner of this student!");
     }
 
     public function delete(User $user, Student $student)
     {
-        return $user->id === $student->user_id;
+        return $user->hasPermission($student) ? Response::allow() : Response::deny("you don't have permission to delete this!");
     }
 }

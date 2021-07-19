@@ -203,10 +203,7 @@ class StudentController extends Controller
      */
     public function create(Request $request)
     {
-        if($request->user()->cannot('create', Student::class)){
-            abort(403, "Oops! you can't have more than one student account at any time :(");
-        }
-
+        $this->authorize('create', Student::class);
         return view('create', ['sex_types' => $this->sex_types]);
     }
 
@@ -292,11 +289,7 @@ class StudentController extends Controller
         $current_student = Student::find($id);
         
         # check if user has permission to edit.
-        $response = Gate::inspect('update-student', $current_student);
-        if(!$response->allowed())
-        {
-            abort(403, $response->message());
-        }
+        $this->authorize('update', $current_student);
 
         $page_num = '';
         if ($request->has('page'))
@@ -377,9 +370,10 @@ class StudentController extends Controller
     public function destroy(Request $request, $id)
     {
         $student = Student::find($id);
-        if($request->user()->cannot('delete', $student)){
-            abort(403, "you don't have permission to delete this!");
-        }
+        
+        $response = Gate::inspect('delete', $student);
+        if(!$response->allowed())
+            abort(403, $response->message());
 
         $student->delete();
         $page_num = 0;
@@ -389,7 +383,6 @@ class StudentController extends Controller
                 $page_num = $request->page;
             else
                 $page_num = intval($request->page) - 1;
-
         }
 
         $intended_url = url()->previous();
@@ -418,7 +411,6 @@ class StudentController extends Controller
                 return response()->json('No results found!', 404);
             else
                 return response()->json($students);
-                
         } else
             return response()->json($students, 404);
     }

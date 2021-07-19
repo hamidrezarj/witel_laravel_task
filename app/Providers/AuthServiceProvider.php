@@ -29,10 +29,5 @@ class AuthServiceProvider extends ServiceProvider
     public function boot()
     {
         $this->registerPolicies();
-
-        Gate::define('update-student', function(User $user, Student $student){
-            return ($user->id === $student->user_id) ? Response::allow(): Response::deny("sorry! You aren't owner of this student!");
-            
-        });
     }
 }
