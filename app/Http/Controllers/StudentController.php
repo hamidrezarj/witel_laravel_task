@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
 use app\Models\User;
-use App\Policies\StudentPolicy;
+use Illuminate\Auth\Access\Events\GateEvaluated;
 use Illuminate\Support\Facades\Gate;
 
 class StudentController extends Controller
@@ -201,12 +201,9 @@ class StudentController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function create(Request $request)
+    public function create()
     {
-        if($request->user()->cannot('create', Student::class)){
-            abort(403, "Oops! you can't have more than one student account at any time :(");
-        }
-
+        $this->authorize('create', Student::class);
         return view('create', ['sex_types' => $this->sex_types]);
     }
 
@@ -220,7 +217,7 @@ class StudentController extends Controller
     {
         # first assign to student which is being created its corresponding user model.
         $user_id = Auth::user()->id;
-        $owner_user = User::find($user_id);        
+        $owner_user = User::find($user_id);
         $today_date = Carbon::now()->toDate()->format($this->date_picker_format);
         $first_name = $request->first_name;
         $last_name = $request->last_name;
@@ -290,13 +287,8 @@ class StudentController extends Controller
     public function edit(Request $request, $id)
     {
         $current_student = Student::find($id);
-        
-        # check if user has permission to edit.
-        $response = Gate::inspect('update-student', $current_student);
-        if(!$response->allowed())
-        {
-            abort(403, $response->message());
-        }
+
+        $this->authorize('update', $current_student);
 
         $page_num = '';
         if ($request->has('page'))
@@ -377,9 +369,10 @@ class StudentController extends Controller
     public function destroy(Request $request, $id)
     {
         $student = Student::find($id);
-        if($request->user()->cannot('delete', $student)){
-            abort(403, "you don't have permission to delete this!");
-        }
+        
+        $response = Gate::inspect('delete', $student);
+        if(!$response->allowed())
+            abort(403, $response->message());
 
         $student->delete();
         $page_num = 0;
@@ -389,7 +382,6 @@ class StudentController extends Controller
                 $page_num = $request->page;
             else
                 $page_num = intval($request->page) - 1;
-
         }
 
         $intended_url = url()->previous();
@@ -418,7 +410,6 @@ class StudentController extends Controller
                 return response()->json('No results found!', 404);
             else
                 return response()->json($students);
-                
         } else
             return response()->json($students, 404);
     }
