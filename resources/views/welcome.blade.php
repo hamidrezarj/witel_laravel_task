@@ -81,7 +81,7 @@
         <tbody>
             @foreach($students as $student)
             <tr>
-                @if(auth()->user()->can('delete', $student) && auth()->user()->can('update-student', $student))
+                @if(auth()->user()->can('delete', $student) && auth()->user()->can('update', $student))
                     <th scope="row">{{$loop->iteration}}</th>
                 @else
                     <th scope="row" style="color: red;">{{$loop->iteration}}</th>
